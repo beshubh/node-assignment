@@ -1,13 +1,38 @@
+// npm modules
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const mongoose = require('mongoose');
 
+// Routers 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const dishRouter = require('./routes/dishesRouter');
 const promoRouter = require('./routes/promotionRouter');
+const leaderRouter = require('./routes/leaderRouter');
+
+
+// Models
+const Dishes = require('./models/dishes');
+
+
+// database url
+const url = 'mongodb://localhost:27017/conFusion';
+
+// Database configuration
+const connect = mongoose.connect(url);
+
+connect
+.then((db)=>{
+  console.log('Connected to the server');
+})
+.catch((err)=>{
+  console.log('Error: \n',err);
+})
+
+
 const app = express();
 
 // view engine setup
@@ -24,6 +49,8 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
+app.use('/leaders',leaderRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
