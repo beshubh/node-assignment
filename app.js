@@ -10,7 +10,7 @@ const FileStore = require('session-file-store')(session);
 
 // Routers 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
+const userRouter = require('./routes/userRouter');
 const dishRouter = require('./routes/dishesRouter');
 const promoRouter = require('./routes/promotionRouter');
 const leaderRouter = require('./routes/leaderRouter');
@@ -50,37 +50,22 @@ app.use(session({
   saveUninitialized:false,
   resave:false,
   store: new FileStore()
-}))
-
+}));
+app.use('/', indexRouter);
+app.use('/users', userRouter);
 function auth(req, res, next){
     console.log(req.session);
     if(!req.session.user) {
-      const authHeader = req.headers.authorization;
-      if(!authHeader){
         const err = new Error('You are not authenticated');
         res.setHeader('WWW-Authenticate','Basic');
         err.status = 401;
         next(err);
-      } else {
-        const auth = new Buffer.from(authHeader.split(' ')[1],'base64').toString().split(':');
-        const usernamme = auth[0];
-        const password = auth[1];
-        if(usernamme === 'admin' && password === 'password'){
-          req.session.user = 'admin';
-          next();
-        } else{
-          const err = new Error('You are not authenticated');
-          res.setHeader('WWW-Authenticate','Basic');
-          err.status = 401;
-          next(err);
-        }
-      }
     } else {
-      if(req.session.user === 'admin') {
+      if(req.session.user === 'authenticated') {
         next();
       } else {
         const err = new Error('You are not authenticated');
-        err.status = 401;
+        err.status = 403;
         next(err); 
       }
     }
@@ -89,8 +74,6 @@ function auth(req, res, next){
 
 app.use(auth);
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
