@@ -1,4 +1,4 @@
-// npm modules
+//  modules
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
@@ -23,7 +23,6 @@ const url = 'mongodb://localhost:27017/conFusion';
 
 // Database configuration
 const connect = mongoose.connect(url);
-
 connect
 .then((db)=>{
   console.log('Connected to the server');
@@ -43,8 +42,32 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
+function auth(req, res, next){
+    console.log(req.headers);
+    const authHeader = req.headers.authorization;
+    if(!authHeader){
+      const err = new Error('You are not authenticated');
+      res.setHeader('WWW-Authenticate','Basic');
+      err.status = 401;
+      next(err);
+    } else {
+      const auth = new Buffer(authHeader.split(' ')[1],'base64').toString().split(':');
+      const usernamme = auth[0];
+      const password = auth[1];
+      if(usernamme === 'admin' && password === 'password'){
+        next();
+      } else{
+        const err = new Error('You are not authenticated');
+        res.setHeader('WWW-Authenticate','Basic');
+        err.status = 401;
+        next(err);
+      }
+    }
+}
+
+app.use(auth);
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/dishes',dishRouter);

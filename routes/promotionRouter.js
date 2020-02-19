@@ -81,5 +81,4 @@ promotionRouter.route('/:promotionId')
         next(err);
     });
 });
-
 module.exports = promotionRouter;
