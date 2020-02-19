@@ -3,7 +3,7 @@ const userRouter = express.Router();
 const bodyParser = require('body-parser');
 const User = require('../models/users');
 const passport = require('passport');
-
+const {getToken,jwtPassport} = require('../authenticate');
 
 const {contentType,applicationJson,statusCode} = require('./utils');
 
@@ -31,19 +31,20 @@ userRouter.post('/signup',(req,res,next)=>{
 });
 
 userRouter.post('/login',passport.authenticate('local'),(req, res)=>{
+  const token = getToken({_id:req.user._id});
   res.statusCode = statusCode.ok;
   res.setHeader(contentType,applicationJson);
-  res.json({successs:true,status:"You are successfully logged in !."});
+  res.json({successs:true,token : token ,status:"You are successfully logged in !."});
 });
 
-userRouter.get('/logout',(req,res)=>{
+userRouter.get('/logout',(req,res,next)=>{
   if(req.session) {
     req.session.destroy();
     res.clearCookie('session-id');
     res.setHeader(contentType,'text/plain');
     res.end('You are logged out');
   } else {
-    const error = new Error('You are not logged in');
+    const err = new Error('You are not logged in');
     err.status = 403;
     next(err);
   }

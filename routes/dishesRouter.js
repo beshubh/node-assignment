@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParse = require('body-parser');
 const mongoose = require('mongoose');
-
+const {verifyUser}  = require('../authenticate');
 const Dishes = require('../models/dishes');
 
 const dishRouter = express.Router();
@@ -19,7 +19,7 @@ dishRouter.route('/')
         next(err);
     })
 })
-.post((req,res, next)=> {
+.post(verifyUser,(req,res, next)=> {
     Dishes.create(req.body)
     .then((dish)=>{
         console.log("Dish Created: ",dish);
@@ -31,11 +31,11 @@ dishRouter.route('/')
         next(err);
     })
 })
-.put((req,res,next)=>{
+.put(verifyUser,(req,res,next)=>{
     res.statusCode=403;
     res.end("Put operation not supported on dishes");
 })
-.delete((req,res,next)=>{
+.delete(verifyUser,(req,res,next)=>{
     Dishes.remove({})
     .then((resp)=>{
         res.statusCode=200;
@@ -61,7 +61,7 @@ get((req,res,next)=>{
 post((req,res,next)=>{
     res.end('Post operation not supported');
 }).
-put((req,res,next)=>{
+put(verifyUser,(req,res,next)=>{
     Dishes.findByIdAndUpdate(req.params.dishId,{
         $set:req.body
     },{new:true})
@@ -74,7 +74,7 @@ put((req,res,next)=>{
         next(err);
     })
 })
-.delete((req,res,next)=>{
+.delete(verifyUser,(req,res,next)=>{
     Dishes.findByIdAndRemove(req.params.dishId)
     .then((resp)=>{
         res.statusCode=200;
@@ -105,7 +105,7 @@ dishRouter.route('/:dishId/comments')
         next(err);
     })
 })
-.post((req,res, next)=> {
+.post(verifyUser,(req,res, next)=> {
     Dishes.findById(req.params.dishId)
     .then((dish)=>{
         if(dish != null) {
@@ -127,11 +127,11 @@ dishRouter.route('/:dishId/comments')
         next(err);
     });
 })
-.put((req,res,next)=>{
+.put(verifyUser,(req,res,next)=>{
     res.statusCode=403;
     res.end("Put operation not supported on for all the comments");
 })
-.delete((req,res,next)=>{
+.delete(verifyUser,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
     .then((dish)=>{
         if(dish != null) {
@@ -177,10 +177,10 @@ dishRouter.route('/:dishId/comments/:commentId')
         next(err);
     });
 })
-.post((req,res,next)=>{
+.post(verifyUser,(req,res,next)=>{
     res.end('Post operation not supported for particular comment');
 })
-.put((req,res,next)=>{
+.put(verifyUser,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
     .then((dish)=>{
         if(dish !== null && dish.comments.id(req.params.commentId) !== null) {
@@ -213,7 +213,7 @@ dishRouter.route('/:dishId/comments/:commentId')
         next(err);
     });
 })
-.delete((req,res,next)=>{
+.delete(verifyUser,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
     .then((dish)=>{
         if(dish !== null && dish.comments.id(req.params.commentId) !== null) {

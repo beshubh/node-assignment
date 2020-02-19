@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const promotionRouter = express.Router();
 const Promotions = require('../models/promotions');
+const {verifyUser} = require('../authenticate');
 promotionRouter.route('/')
 .get((req,res, next)=>{
     Promotions.find({})
@@ -14,7 +15,7 @@ promotionRouter.route('/')
         next(err);
     });
 })
-.post((req,res, next)=> {
+.post(verifyUser,(req,res, next)=> {
     Promotions.create(req.body)
     .then((promotion)=>{
         res.statusCode = 200;
@@ -25,11 +26,11 @@ promotionRouter.route('/')
         next(err);
     });
 })
-.put((req,res,next)=>{
+.put(verifyUser,(req,res,next)=>{
     res.statusCode=403;
     res.end("Put operation not supported on dishes");
 })
-.delete((req,res,next)=>{
+.delete(verifyUser,(req,res,next)=>{
     Promotions.remove({})
     .then((resp)=>{
         res.statusCode = 200;
@@ -53,11 +54,11 @@ promotionRouter.route('/:promotionId')
         next(err);
     });
 })
-.post((req,res,next)=>{
+.post(verifyUser,(req,res,next)=>{
     res.statusCode = 403;
     res.end('Post operation not supported');
 })
-.put((req,res,next)=>{
+.put(verifyUser,(req,res,next)=>{
     Promotions.findByIdAndUpdate(req.params.promotionId,{
         $set:req.body
     },{new:true})
@@ -70,7 +71,7 @@ promotionRouter.route('/:promotionId')
         next(err);
     });
 })
-.delete((req,res,next)=>{
+.delete(verifyUser,(req,res,next)=>{
     Promotions.findByIdAndRemove(req.params.promotionId)
     .then((resp)=>{
         res.statusCode = 200;
