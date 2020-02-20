@@ -202,23 +202,17 @@ dishRouter.route('/:dishId/comments/:commentId')
     .then((dish)=>{
         const comment  = dish.comments.id(req.params.commentId);
         if(dish !== null && comment !== null) {
-            const commentAuthorId = String(comment.author._id);
-            const userId = String(req.user._id);
-            console.log('dishRouter put on commnet/commentId');
-            console.log('commentAuthorid',commentAuthorId);
-            console.log('user id',req.user._id);
-            console.log(commentAuthorId === req.user._id);
-            if(commentAuthorId !== req.user._id) {
-                const err = new Error(`You don't have permission to do this operation`);
-                err.status = statusCode.forbidden;
-                next(err); 
-            }
+            const commentAuthorId = comment.author;
+
+            if(commentAuthorId.equals(req.user._id)) {  
+
             if(req.body.rating) {
                 const newRating = req.body.rating;
-                comment.rating = newRating;
+                dish.comments.id(req.params.commentId).rating = newRating;
+            }
             if(req.body.comment) {
                 const newComment = req.body.comment;
-                comment.comment = newComment;
+                dish.comments.id(req.params.commentId).comment = newComment;
             }
             dish.save()
             .then((dish) => {
@@ -227,7 +221,11 @@ dishRouter.route('/:dishId/comments/:commentId')
                 res.json(dish);
                 },
                 (err) => next(err) );
-            } 
+            } else{
+                const err = new Error(`You don't have permission to do this operation`);
+                err.status = statusCode.forbidden;
+                next(err); 
+            }
         } else if (dish ===null) {
             const err = new Error(`Dish ${req.params.dishId} does not exist`);
             err.status = statusCode.notFound;
@@ -245,14 +243,24 @@ dishRouter.route('/:dishId/comments/:commentId')
 .delete(verifyUser,(req,res,next)=>{
     Dishes.findById(req.params.dishId)
     .then((dish)=>{
-        if(dish !== null && dish.comments.id(req.params.commentId) !== null) {
-            dish.comments.id(req.params.commentId).remove();
-            dish.save()
-            .then((dish)=>{
-                res.statusCode=statusCode.ok;
-                res.setHeader('Content-Type','application/json');
-                res.json(dish);
-            },(err)=>next(err));
+        const comment = dish.comments.id(req.params.commentId);
+        if(dish !== null && comment !== null) {
+            const commentAuthorId = comment.author;
+
+            if(commentAuthorId.equals(req.user._id)) {  
+                dish.comments.id(req.params.commentId).remove();
+                dish.save()
+                .then((dish)=>{
+                    res.statusCode=statusCode.ok;
+                    res.setHeader('Content-Type','application/json');
+                    res.json(dish);
+                },
+                (err)=>next(err));
+            } else {
+                const err = new Error(`You don't have permission to do this operation`);
+                err.status = statusCode.forbidden;
+                next(err); 
+            }
         } else if (dish ===null){
             const err = new Error(`Dish ${req.params.dishId} does not exist`);
             err.status = statusCode.notFound;
