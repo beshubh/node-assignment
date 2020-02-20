@@ -15,8 +15,8 @@ const commentSchema = new Schema({
         required:true
     },
     author:{
-        type:String,
-        required:true
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'User',
     }
 },{
     timestamps:true
@@ -60,4 +60,4 @@ const dishSchema = new Schema({
 });
 
 const Dishes = mongoose.model('Dish',dishSchema);
-module.exports=Dishes;
+module.exports =Dishes;

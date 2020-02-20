@@ -5,7 +5,7 @@ const User = require('../models/users');
 const passport = require('passport');
 const {getToken,jwtPassport} = require('../authenticate');
 
-const {contentType,applicationJson,statusCode} = require('./utils');
+const  {contentType,applicationJson,statusCode} = require('./utils');
 
 
 userRouter.use(bodyParser.json());
@@ -20,12 +20,25 @@ userRouter.post('/signup',(req,res,next)=>{
       res.setHeader(contentType,applicationJson);
       res.json({error:err});
     } else {
-      passport.authenticate('local')
-      (req,res,()=>{
-        res.statusCode = statusCode.ok;
-        res.setHeader(contentType,applicationJson);
-        res.json({successs:true,status:'Registration Successful !'});
-      });
+      if(req.body.firstname) {
+        user.firstname = req.body.firstname;
+      }
+      if(req.body.lastname) {
+        user.lastname = req.body.lastname;
+      }
+      user.save((err, user)=>{
+        if(err) {
+          res.statusCode = statusCode.internelServerError;
+          res.setHeader(contentType,applicationJson);
+          res.json({success:false,error:err});
+        }
+        passport.authenticate('local')
+        (req,res,()=>{
+          res.statusCode = statusCode.ok;
+          res.setHeader(contentType,applicationJson);
+          res.json({successs:true,status:'Registration Successful !'});
+        });
+      })
     }
   });
 });
