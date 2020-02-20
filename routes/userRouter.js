@@ -3,14 +3,20 @@ const userRouter = express.Router();
 const bodyParser = require('body-parser');
 const User = require('../models/users');
 const passport = require('passport');
-const {getToken,jwtPassport} = require('../authenticate');
+const {getToken,jwtPassport, verifyAdmin,verifyUser} = require('../authenticate');
 
 const  {contentType,applicationJson,statusCode} = require('./utils');
 
 
 userRouter.use(bodyParser.json());
-userRouter.get('/',(req, res)=>{
-  res.send('respond with a source');
+userRouter.get('/',verifyUser,verifyAdmin,(req, res, next)=>{
+  User.find({})
+  .then((users)=>{
+    res.statusCode = statusCode.ok;
+    res.setHeader(contentType, applicationJson);
+    res.json(users);
+  })
+  .catch(err=>next(err));
 });
 
 userRouter.post('/signup',(req,res,next)=>{
@@ -51,6 +57,7 @@ userRouter.post('/login',passport.authenticate('local'),(req, res)=>{
 });
 
 userRouter.get('/logout',(req,res,next)=>{
+  console.log(req);
   if(req.session) {
     req.session.destroy();
     res.clearCookie('session-id');

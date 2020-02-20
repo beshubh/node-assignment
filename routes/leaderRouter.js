@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 
 const leaderRouter = express.Router();
 const Leaders = require('../models/leaders');
-const {verifyUser} = require('../authenticate');
+const {verifyUser,verifyAdmin} = require('../authenticate');
 leaderRouter.route('/')
 .get((req,res,next)=>{
     Leaders.find({})
@@ -16,7 +16,7 @@ leaderRouter.route('/')
         next(err);
     })
 })
-.post(verifyUser,(req,res,next)=>{
+.post(verifyUser,verifyAdmin,(req,res,next)=>{
     Leaders.create(req.body)
     .then((leader)=>{
         res.statusCode = 200;
@@ -27,11 +27,11 @@ leaderRouter.route('/')
         next(err);
     })
 })
-.put(verifyUser,(req,res,next)=>{
+.put(verifyUser,verifyAdmin,(req,res,next)=>{
     res.statusCode = 403;
     res.end('Put operation not supported');
 })
-.delete(verifyUser,(req,res,next)=>{
+.delete(verifyUser,verifyAdmin,(req,res,next)=>{
     Leaders.remove({})
     .then((resp)=>{
         res.statusCode = 200;
@@ -59,7 +59,7 @@ leaderRouter.route('/:leaderId')
     res.statusCode = 403;
     res.end('Post operation not supported here');
 })
-.put(verifyUser,(req,res,next)=>{
+.put(verifyUser,verifyAdmin,(req,res,next)=>{
     Leaders.findByIdAndUpdate(req.params.leaderId,{
         $set:req.body,
     },{new:true})
@@ -72,7 +72,7 @@ leaderRouter.route('/:leaderId')
         next(err);
     })
 })
-.delete(verifyUser,(req,res,next)=>{
+.delete(verifyUser,verifyAdmin,(req,res,next)=>{
     Leaders.findByIdAndRemove(req.params.leaderId)
     .then((resp)=>{
         res.statusCode = 200;
