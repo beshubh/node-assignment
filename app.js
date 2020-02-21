@@ -8,13 +8,14 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const passport = require('passport');
-
+const bodyParser = require('body-parser');
 // Routers 
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/userRouter');
 const dishRouter = require('./routes/dishesRouter');
 const promoRouter = require('./routes/promotionRouter');
 const leaderRouter = require('./routes/leaderRouter');
+const uploadRouter = require('./routes/uploadRouter');
 
 
 // Files
@@ -40,6 +41,8 @@ connect
 
 
 const app = express();
+app.use(bodyParser.json({limit:'50mb'})); 
+app.use(bodyParser.urlencoded({extended:true, limit:'50mb'}));
 app.all('*',(req, res, next)=>{
   if(req.secure) {
     return next();
@@ -65,6 +68,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/dishes',dishRouter);
 app.use('/promotions',promoRouter);
 app.use('/leaders',leaderRouter);
+app.use('/imageUpload',uploadRouter);
 
 
 // catch 404 and forward to error handler
