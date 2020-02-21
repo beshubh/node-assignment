@@ -6,10 +6,10 @@ const passport = require('passport');
 const {getToken,jwtPassport, verifyAdmin,verifyUser} = require('../authenticate');
 
 const  {contentType,applicationJson,statusCode} = require('./utils');
-
+const cors = require('./cors');
 
 userRouter.use(bodyParser.json());
-userRouter.get('/',verifyUser,verifyAdmin,(req, res, next)=>{
+userRouter.get('/',cors.corsWithOptions, verifyUser,verifyAdmin,(req, res, next)=>{
   User.find({})
   .then((users)=>{
     res.statusCode = statusCode.ok;
@@ -19,7 +19,7 @@ userRouter.get('/',verifyUser,verifyAdmin,(req, res, next)=>{
   .catch(err=>next(err));
 });
 
-userRouter.post('/signup',(req,res,next)=>{
+userRouter.post('/signup',cors.corsWithOptions, (req,res,next)=>{
   User.register(new User({username:req.body.username}),req.body.password,(err,user)=>{
     if(err) {
       res.statusCode = statusCode.internelServerError;
@@ -49,14 +49,14 @@ userRouter.post('/signup',(req,res,next)=>{
   });
 });
 
-userRouter.post('/login',passport.authenticate('local'),(req, res)=>{
+userRouter.post('/login',cors.corsWithOptions, passport.authenticate('local'),(req, res)=>{
   const token = getToken({_id:req.user._id});
   res.statusCode = statusCode.ok;
   res.setHeader(contentType,applicationJson);
   res.json({successs:true,token : token ,status:"You are successfully logged in !."});
 });
 
-userRouter.get('/logout',(req,res,next)=>{
+userRouter.get('/logout',cors.cors, (req,res,next)=>{
   console.log(req);
   if(req.session) {
     req.session.destroy();
