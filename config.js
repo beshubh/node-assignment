@@ -2,7 +2,7 @@ module.exports = {
     'secretKey':'12345-67890-09876-54321',
     'mongoUrl':'mongodb://localhost:27017/conFusion',
     'facebook':{
-        clientId:'2644926875605801',
-        clientSecret:'cd3d36eb4751a3c6a51e5917efe94457'
+        clientId:'<client_id>',
+        clientSecret:'<client_secret>'
     }
 }
